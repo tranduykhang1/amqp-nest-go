@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  api-server:
+    container_name: api-server
+    build:
+      context: .
+    volumes:
+      - .:/usr/src/app/
+      - /usr/src/app/node_modules
+    ports:
+      - 3000:3000
+      - 9229:9229
+    command: npm run start:dev
+    depends_on:
+      - rabbitmq
+    networks:
+      - ammq-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    volumes:
+      - /var/lib/rabbitmq
+    ports:
+      - '${RABBITMQ_PORT}:${RABBITMQ_PORT}'
+      - '15672:15672'
+    env_file:
+      - ./.env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    networks:
+      - ammq-network
+
+networks:
+  ammq-network:
+    external:
+      name: ammq-network
